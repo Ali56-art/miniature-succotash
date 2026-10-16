@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civciv Komutu</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: #f0f4f8; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .main-container { width: 100%; max-width: 1100px; background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; min-height: 85vh; }
+        .header { background: #2c3e50; color: #fff; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .content-body { display: flex; flex: 1; }
+        .sidebar { width: 260px; background: #f8f9fa; border-right: 1px solid #ddd; display: flex; flex-direction: column; justify-content: space-between; padding: 15px; }
+        .game-area { flex: 1; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
+        .account-btn { width: 100%; padding: 10px; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; margin-bottom: 8px; }
+        .btn-teacher { background: #27ae60; }
+        .btn-creative { background: #e67e22; }
+        .btn-student { background: #2980b9; }
+        .btn-reset { background: #7f8c8d; font-size: 0.75rem; padding: 6px; }
+        .party-section { display: flex; flex-direction: column; gap: 8px; background: #e3f2fd; padding: 10px; border-radius: 6px; margin-bottom: 10px; }
+        .party-btn { width: 100%; padding: 8px; border: none; border-radius: 4px; background: #3498db; color: #fff; font-weight: bold; cursor: pointer; }
+        .party-btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+        .canvas-box { width: 100%; height: 250px; background: #e8f5e9; border: 2px dashed #81c784; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 2rem; }
+        .lobby-panel { display: none; background: #fff; border: 2px solid #3498db; border-radius: 8px; padding: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="header">
+            <div>
+                <span>🐤 Civciv Komutu</span>
+                <h2>Lobiye Hoş Geldin!</h2>
+            </div>
+        </div>
+
+        <div class="content-body">
+            <div class="sidebar">
+                <div>
+                    <div style="background:#eef2f7; padding:10px; border-radius:6px; font-size:0.9rem; margin-bottom:10px;">
+                        Lütfen civcivi komutlandır! 🐥
+                    </div>
+                    <div style="font-weight:bold; font-size:0.85rem; margin-bottom:15px;">
+                        <div id="lblLevel">Seviye: 1 / 100</div>
+                        <div id="lblRole">Oyun Modu: Tekil (Solo)</div>
+                    </div>
+
+                    <!-- Parti Alanı -->
+                    <div id="partySection" class="party-section">
+                        <span style="font-size:0.75rem; font-weight:bold; color:#1565c0; text-align:center;">PARTİ YÖNETİMİ</span>
+                        
+                        <!-- Başlangıçta KESİNLİKLE GİZLİ OLAN BUTONLAR -->
+                        <button id="createPartyBtn" class="party-btn" style="display: none; background:#8e44ad;">Parti Oluştur</button>
+                        <button id="startRaceBtn" class="party-btn" style="display: none; background:#27ae60;" disabled>Yarışmayı Başlat (Min 5)</button>
+                        
+                        <!-- Herkese Açık Butonlar -->
+                        <button id="partyCodeBtn" class="party-btn">Parti Kodu</button>
+                        <button id="joinPartyBtn" class="party-btn">Partiye Katıl</button>
+                        
+                        <div id="pinDisplay" style="text-align:center; font-weight:bold; font-size:0.85rem; background:#fff; padding:5px; display:none;">PIN: Yok</div>
+                    </div>
+                </div>
+
+                <div>
+                    <button id="teacherBtn" class="account-btn btn-teacher">TEACHER ACCOUNT</button>
+                    <button id="creativeBtn" class="account-btn btn-creative">CREATIVE ACCOUNT</button>
+                    <button id="studentBtn" class="account-btn btn-student">STUDENT ACCOUNT</button>
+                    <button id="resetBtn" class="account-btn btn-reset">Sıfırla / Çıkış Yap 🔄</button>
+                </div>
+            </div>
+
+            <div class="game-area">
+                <div class="canvas-box">🐥 ➡️ 🌾</div>
+                
+                <div>
+                    <h3>Komut Paneli</h3>
+                    <div style="margin-top:10px; display:flex; gap:8px;">
+                        <button id="runBtn" style="padding:8px 15px; background:#2ecc71; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Çalıştır ▶️</button>
+                    </div>
+                </div>
+
+                <div id="lobbyPanel" class="lobby-panel">
+                    <h4>Katılan Oyuncular Lobi Paneli</h4>
+                    <p style="font-size:0.8rem; color:#666;">Yarışmanın başlaması için en az 5 öğrenci gereklidir.</p>
+                    <ul id="playerList" style="list-style:none; margin-top:8px;">
+                        <li style="color:#888; font-style:italic;">Daha kişi yok</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sertifika Modalı -->
+    <div id="certModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+        <div style="background:#fff; padding:30px; border-radius:10px; text-align:center; border:4px solid #f1c40f; max-width:400px;">
+            <h2>🏆 BAŞARI SERTİFİKASI 🏆</h2>
+            <p style="margin:15px 0;">Tebrikler! 100 seviyeyi başarıyla tamamladın ve bu sertifikayı kazandın!</p>
+            <button onclick="document.getElementById('certModal').style.display='none'" style="padding:8px 16px; background:#27ae60; color:#fff; border:none; border-radius:4px; cursor:pointer;">Kapat</button>
+        </div>
+    </div>
+
+    <script>
+        // Sayfa açılır açılmaz her şeyi sıfırdan kurallarına göre yapılandır
+        window.addEventListener('DOMContentLoaded', function() {
+            // Eğer daha önce kayıtlı bir oturum yoksa her şeyi temiz başlat
+            if(!localStorage.getItem('initialized')) {
+                localStorage.clear();
+                localStorage.setItem('initialized', 'true');
+            }
+
+            updateInterface();
+            setInterval(checkLobbyStatus, 1000);
+
+            document.getElementById('teacherBtn').addEventListener('click', loginTeacher);
+            document.getElementById('creativeBtn').addEventListener('click', loginCreative);
+            document.getElementById('studentBtn').addEventListener('click', loginStudent);
+            document.getElementById('resetBtn').addEventListener('click', fullReset);
+            document.getElementById('createPartyBtn').addEventListener('click', createParty);
+            document.getElementById('partyCodeBtn').addEventListener('click', showPartyCode);
+            document.getElementById('joinPartyBtn').addEventListener('click', joinParty);
+            document.getElementById('startRaceBtn').addEventListener('click', startRace);
+            document.getElementById('runBtn').addEventListener('click', runGame);
+        });
+
+        function updateInterface() {
+            const role = localStorage.getItem('userRole');
+            const name = localStorage.getItem('playerName');
+            const isPartyCreated = localStorage.getItem('isPartyCreated') === 'true';
+            const isRace = localStorage.getItem('isRaceActive') === 'true';
+            const lvl = parseInt(localStorage.getItem('currentLvl') || '1');
+
+            // Seviye yazısı
+            const limit = isRace ? 10 : 100;
+            document.getElementById('lblLevel').innerText = `Seviye: ${lvl} / ${limit}` + (isRace ? ' (YARIŞMA)' : '');
+
+            // Buton elementleri
+            const createBtn = document.getElementById('createPartyBtn');
+            const startBtn = document.getElementById('startRaceBtn');
+            const lobbyPanel = document.getElementById('lobbyPanel');
+            const roleLbl = document.getElementById('lblRole');
+
+            // 1. Durum: Öğretmen veya Creative Giriş Yapmışsa
+            if (role === 'teacher' || role === 'creative') {
+                createBtn.style.display = 'block'; // Parti Oluştur görünür
+                roleLbl.innerText = 'Oyuncu: ' + (role === 'teacher' ? 'Öğretmen' : 'Creative');
+
+                if (isPartyCreated) {
+                    startBtn.style.display = 'block';
+                    lobbyPanel.style.display = 'block';
+                } else {
+                    startBtn.style.display = 'none';
+                    lobbyPanel.style.display = 'none';
+                }
+            } 
+            // 2. Durum: Öğrenci Giriş Yapmışsa veya Hiç Giriş Yapılmamışsa (Solo Mod)
+            else {
+                createBtn.style.display = 'none'; // ASLA GÖrünmez
+                startBtn.style.display = 'none'; // ASLA GÖrünmez
+                lobbyPanel.style.display = 'none'; // ASLA GÖrünmez
+
+                if (role === 'student') {
+                    roleLbl.innerText = 'Oyuncu: Öğrenci (' + name + ')';
+                } else {
+                    roleLbl.innerText = 'Oyun Modu: Tekil (Solo)';
+                }
+            }
+
+            const pin = localStorage.getItem('activePartyPin');
+            if (pin && isPartyCreated) {
+                const pinBox = document.getElementById('pinDisplay');
+                pinBox.innerText = "PIN: " + pin;
+                pinBox.style.display = 'block';
+            } else {
+                document.getElementById('pinDisplay').style.display = 'none';
+            }
+        }
+
+        function checkLobbyStatus() {
+            const isPartyCreated = localStorage.getItem('isPartyCreated') === 'true';
+            if (isPartyCreated) {
+                const players = JSON.parse(localStorage.getItem('joinedPlayers') || '[]');
+                const list = document.getElementById('playerList');
+                const startBtn = document.getElementById('startRaceBtn');
+                const role = localStorage.getItem('userRole');
+
+                if (players.length > 0) {
+                    list.innerHTML = '';
+                    players.forEach(p => {
+                        const li = document.createElement('li');
+                        li.innerText = '👤 ' + p;
+                        li.style.cssText = 'background:#f1f8ff; padding:6px; border-radius:4px; margin-bottom:4px; font-weight:bold; color:#27ae60;';
+                        list.appendChild(li);
+                    });
+                } else {
+                    list.innerHTML = '<li style="color:#888; font-style:italic;">Daha kişi yok</li>';
+                }
+
+                if (role === 'teacher' || role === 'creative') {
+                    if (players.length >= 5) {
+                        startBtn.disabled = false;
+                        startBtn.innerText = "Yarışmayı Başlat 🚀";
+                    } else {
+                        startBtn.disabled = true;
+                        startBtn.innerText = `Yarışmayı Başlat (${players.length}/5 Öğrenci)`;
+                    }
+                }
+            }
+        }
+
+        function loginTeacher() {
+            const pass = prompt("Öğretmen şifresini girin:");
+            if (pass === "teacher§@") {
+                localStorage.setItem('userRole', 'teacher');
+                alert("Öğretmen hesabı aktifleşti!");
+                updateInterface();
+            } else if (pass !== null) { alert("Hatalı şifre!"); }
+        }
+
+        function loginCreative() {
+            const pass = prompt("Creative şifresini girin:");
+            if (pass === "creativeOO1029384756") {
+                localStorage.setItem('userRole', 'creative');
+                alert("Creative hesabı aktifleşti!");
+                updateInterface();
+            } else if (pass !== null) { alert("Hatalı şifre!"); }
+        }
+
+        function loginStudent() {
+            const name = prompt("Kullanıcı adınızı girin:");
+            if (name && name.trim() !== "") {
+                localStorage.setItem('userRole', 'student');
+                localStorage.setItem('playerName', name.trim());
+                alert("Hoş geldin, " + name);
+                updateInterface();
+            } else if (name !== null) { alert("Geçerli bir ad girmelisin!"); }
+        }
+
+        function fullReset() {
+            localStorage.clear();
+            alert("Her şey sıfırlandı! Tekil moda dönüldü.");
+            location.reload();
+        }
+
+        function createParty() {
+            const pin = Math.floor(100000 + Math.random() * 900000).toString();
+            localStorage.setItem('activePartyPin', pin);
+            localStorage.setItem('isPartyCreated', 'true');
+            localStorage.setItem('joinedPlayers', JSON.stringify([]));
+            alert("Parti oluşturuldu! PIN Kodu: " + pin);
+            updateInterface();
+        }
+
+        function showPartyCode() {
+            const pin = localStorage.getItem('activePartyPin');
+            const isPartyCreated = localStorage.getItem('isPartyCreated') === 'true';
+            if (pin && isPartyCreated) alert("Aktif Parti PIN Kodu: " + pin);
+            else alert("Henüz aktif bir parti bulunmuyor!");
+        }
+
+        function joinParty() {
+            const isPartyCreated = localStorage.getItem('isPartyCreated') === 'true';
+            if (!isPartyCreated) {
+                alert("Şu anda aktif bir parti bulunmuyor!");
+                return;
+            }
+
+            const code = prompt("Parti PIN kodunu girin:");
+            const pin = localStorage.getItem('activePartyPin');
+            let name = localStorage.getItem('playerName');
+            
+            if (!name) {
+                name = prompt("Partiye katılmak için isminizi girin:");
+                if (name && name.trim() !== "") {
+                    localStorage.setItem('playerName', name.trim());
+                    name = name.trim();
+                } else {
+                    return;
+                }
+            }
+
+            if (code) {
+                if (code === pin) {
+                    let players = JSON.parse(localStorage.getItem('joinedPlayers') || '[]');
+                    if (!players.includes(name)) {
+                        players.push(name);
+                        localStorage.setItem('joinedPlayers', JSON.stringify(players));
+                    }
+                    alert("Partiye başarıyla katıldın, " + name + "!");
+                } else { alert("Girilen PIN kodu hatalı!"); }
+            }
+        }
+
+        function startRace() {
+            localStorage.setItem('isRaceActive', 'true');
+            localStorage.setItem('currentLvl', '1');
+            alert("Yarışma başladı!");
+            updateInterface();
+        }
+
+        function runGame() {
+            const isRace = localStorage.getItem('isRaceActive') === 'true';
+            let lvl = parseInt(localStorage.getItem('currentLvl') || '1') + 1;
+            const limit = isRace ? 10 : 100;
+
+            if (lvl > limit) {
+                if (isRace) {
+                    alert("🥇 10. seviyeyi bitirdin ve 1. oldun!");
+                    lvl = 10;
+                } else {
+                    document.getElementById('certModal').style.display = 'flex';
+                    lvl = 100;
+                }
+            }
+            localStorage.setItem('currentLvl', lvl);
+            updateInterface();
+            alert("Seviye geçildi!");
+        }
+    </script>
+</body>
+</html>
