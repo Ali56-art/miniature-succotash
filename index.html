@@ -100,12 +100,10 @@
     </div>
 
     <script>
-        // Sayfa açılır açılmaz her şeyi sıfırdan kurallarına göre yapılandır
         window.addEventListener('DOMContentLoaded', function() {
-            // Eğer daha önce kayıtlı bir oturum yoksa her şeyi temiz başlat
-            if(!localStorage.getItem('initialized')) {
+            if(!localStorage.getItem('clean_start')) {
                 localStorage.clear();
-                localStorage.setItem('initialized', 'true');
+                localStorage.setItem('clean_start', 'true');
             }
 
             updateInterface();
@@ -129,19 +127,16 @@
             const isRace = localStorage.getItem('isRaceActive') === 'true';
             const lvl = parseInt(localStorage.getItem('currentLvl') || '1');
 
-            // Seviye yazısı
             const limit = isRace ? 10 : 100;
             document.getElementById('lblLevel').innerText = `Seviye: ${lvl} / ${limit}` + (isRace ? ' (YARIŞMA)' : '');
 
-            // Buton elementleri
             const createBtn = document.getElementById('createPartyBtn');
             const startBtn = document.getElementById('startRaceBtn');
             const lobbyPanel = document.getElementById('lobbyPanel');
             const roleLbl = document.getElementById('lblRole');
 
-            // 1. Durum: Öğretmen veya Creative Giriş Yapmışsa
             if (role === 'teacher' || role === 'creative') {
-                createBtn.style.display = 'block'; // Parti Oluştur görünür
+                createBtn.style.display = 'block'; 
                 roleLbl.innerText = 'Oyuncu: ' + (role === 'teacher' ? 'Öğretmen' : 'Creative');
 
                 if (isPartyCreated) {
@@ -151,12 +146,10 @@
                     startBtn.style.display = 'none';
                     lobbyPanel.style.display = 'none';
                 }
-            } 
-            // 2. Durum: Öğrenci Giriş Yapmışsa veya Hiç Giriş Yapılmamışsa (Solo Mod)
-            else {
-                createBtn.style.display = 'none'; // ASLA GÖrünmez
-                startBtn.style.display = 'none'; // ASLA GÖrünmez
-                lobbyPanel.style.display = 'none'; // ASLA GÖrünmez
+            } else {
+                createBtn.style.display = 'none'; 
+                startBtn.style.display = 'none'; 
+                lobbyPanel.style.display = 'none'; 
 
                 if (role === 'student') {
                     roleLbl.innerText = 'Oyuncu: Öğrenci (' + name + ')';
@@ -237,7 +230,7 @@
 
         function fullReset() {
             localStorage.clear();
-            alert("Her şey sıfırlandı! Tekil moda dönüldü.");
+            alert("Her şey sıfırlandı!");
             location.reload();
         }
 
@@ -304,7 +297,7 @@
 
             if (lvl > limit) {
                 if (isRace) {
-                    alert("🥇 10. seviyeyi bitirdin ve 1. oldun!");
+                    alert("🥇 10. seviyeyi bitirdin ve 1. oldون!");
                     lvl = 10;
                 } else {
                     document.getElementById('certModal').style.display = 'flex';
